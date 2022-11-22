@@ -1,14 +1,19 @@
 import classNames from 'classnames';
+import { Card } from '../types/Card';
+import { CardFace } from '../types/CardFace';
 import { Rank } from '../types/Rank';
 import { Suit } from '../types/Suit';
 
 interface Props {
   className?: string | undefined;
-  rank: Rank;
-  suit: Suit;
+  card: Card;
 }
 
-function PlayingCard({ className, rank, suit }: Props) {
+function PlayingCard({ className, card: { rank, suit, face } }: Props) {
+  if (face === CardFace.Down) {
+    return <div className={classNames('w-[50px] h-[70px]', 'bg-sky-400 rounded-sm border-white border')} />;
+  }
+
   let rankDisplay: string;
   let suitDisplay: string;
 
