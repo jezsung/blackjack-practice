@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   // Type check
-  '**/*.(ts|tsx)': () => 'tsc --noEmit',
+  '**/*.(ts|tsx)': () => 'tsc-files --noEmit',
 
   // Lint
   '**/*.(ts|tsx|js)': (filenames) =>
