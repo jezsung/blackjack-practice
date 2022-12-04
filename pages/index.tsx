@@ -1,16 +1,17 @@
 import classNames from 'classnames';
-import PlayingCard from '../components/PlayingCard';
-import { Card } from '../types/Card';
-import { CardFace } from '../types/CardFace';
-import { Rank } from '../types/Rank';
-import { Suit } from '../types/Suit';
+import PlayingCardView from '../components/PlayingCardView';
+import { PlayingCard } from '../types/playing-card';
 
 export default function Home() {
-  const card = new Card(Rank.Ace, Suit.Spade, CardFace.Up);
+  const card: PlayingCard = {
+    face: 'up',
+    rank: 'ace',
+    suit: 'spade',
+  };
 
   return (
     <div className={classNames('flex justify-center items-center')}>
-      <PlayingCard card={card} />
+      <PlayingCardView card={card} />
     </div>
   );
 }

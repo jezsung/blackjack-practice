@@ -1,16 +1,13 @@
 import classNames from 'classnames';
-import { Card } from '../types/Card';
-import { CardFace } from '../types/CardFace';
-import { Rank } from '../types/Rank';
-import { Suit } from '../types/Suit';
+import { PlayingCard } from '../types/playing-card';
 
 interface Props {
   className?: string | undefined;
-  card: Card;
+  card: PlayingCard;
 }
 
-function PlayingCard({ className, card: { rank, suit, face } }: Props) {
-  if (face === CardFace.Down) {
+function PlayingCardView({ className, card: { rank, suit, face } }: Props) {
+  if (face === 'down') {
     return <div className={classNames('w-[50px] h-[70px]', 'bg-sky-400 rounded-sm border-white border')} />;
   }
 
@@ -18,61 +15,61 @@ function PlayingCard({ className, card: { rank, suit, face } }: Props) {
   let suitDisplay: string;
 
   switch (rank) {
-    case Rank.One:
+    case '1':
       rankDisplay = '1';
       break;
-    case Rank.Two:
+    case '2':
       rankDisplay = '2';
       break;
-    case Rank.Three:
+    case '3':
       rankDisplay = '3';
       break;
-    case Rank.Four:
+    case '4':
       rankDisplay = '4';
       break;
-    case Rank.Five:
+    case '5':
       rankDisplay = '5';
       break;
-    case Rank.Six:
+    case '6':
       rankDisplay = '6';
       break;
-    case Rank.Seven:
+    case '7':
       rankDisplay = '7';
       break;
-    case Rank.Eight:
+    case '8':
       rankDisplay = '8';
       break;
-    case Rank.Nine:
+    case '9':
       rankDisplay = '9';
       break;
-    case Rank.Ten:
+    case '10':
       rankDisplay = '10';
       break;
-    case Rank.Jack:
+    case 'jack':
       rankDisplay = 'J';
       break;
-    case Rank.Queen:
+    case 'queen':
       rankDisplay = 'Q';
       break;
-    case Rank.King:
+    case 'king':
       rankDisplay = 'K';
       break;
-    case Rank.Ace:
+    case 'ace':
       rankDisplay = 'A';
       break;
   }
 
   switch (suit) {
-    case Suit.Club:
+    case 'club':
       suitDisplay = '♣';
       break;
-    case Suit.Diamond:
+    case 'diamond':
       suitDisplay = '♦';
       break;
-    case Suit.Heart:
+    case 'heart':
       suitDisplay = '♥';
       break;
-    case Suit.Spade:
+    case 'spade':
       suitDisplay = '♠';
       break;
   }
@@ -88,8 +85,8 @@ function PlayingCard({ className, card: { rank, suit, face } }: Props) {
     >
       <div
         className={classNames('text-lg', {
-          'text-black': suit === Suit.Club || suit === Suit.Spade,
-          'text-red-500': suit === Suit.Diamond || suit === Suit.Heart,
+          'text-black': suit === 'club' || suit === 'spade',
+          'text-red-500': suit === 'diamond' || suit === 'heart',
         })}
       >
         {suitDisplay}
@@ -99,4 +96,4 @@ function PlayingCard({ className, card: { rank, suit, face } }: Props) {
   );
 }
 
-export default PlayingCard;
+export default PlayingCardView;

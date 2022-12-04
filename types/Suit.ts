@@ -1,8 +1,6 @@
-enum Suit {
-  Club,
-  Diamond,
-  Heart,
-  Spade,
-}
+const suits = ['club', 'diamond', 'heart', 'spade'] as const;
 
-export { Suit };
+type Suit = typeof suits[number];
+
+export { suits };
+export type { Suit };
