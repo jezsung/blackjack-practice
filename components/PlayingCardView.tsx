@@ -15,9 +15,6 @@ function PlayingCardView({ className, card: { rank, suit, face } }: Props) {
   let suitDisplay: string;
 
   switch (rank) {
-    case '1':
-      rankDisplay = '1';
-      break;
     case '2':
       rankDisplay = '2';
       break;
