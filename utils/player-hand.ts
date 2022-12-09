@@ -77,7 +77,7 @@ class PlayerHand {
     return this.cards[0].rank === this.cards[1].rank;
   }
 
-  add(card: PlayingCard): void {
+  deal(card: PlayingCard): void {
     this.cards.push(card);
   }
 }
