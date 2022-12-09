@@ -92,4 +92,4 @@ class PlayerHand {
   }
 }
 
-export { PlayerHand as Hand };
+export { PlayerHand };
