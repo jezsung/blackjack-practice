@@ -1,3 +1,4 @@
+import { Face } from '../types/face';
 import { PlayingCard } from '../types/playing-card';
 import { ranks } from '../types/rank';
 import { suits } from '../types/suit';
@@ -21,12 +22,14 @@ class Shoe {
     this.shuffle();
   }
 
-  draw(): PlayingCard {
+  draw(face: Face = 'up'): PlayingCard {
     const card = this.cards.pop();
 
     if (!card) {
       throw new Error('Shoe has no more cards');
     }
+
+    card.face = face;
 
     return card;
   }
