@@ -53,6 +53,10 @@ class PlayerHand {
     return sum;
   }
 
+  get blackjack(): boolean {
+    return this.cards.length === 2 && this.sum === 21;
+  }
+
   get bust(): boolean {
     return this.sum > 21;
   }
