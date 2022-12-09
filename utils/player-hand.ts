@@ -2,6 +2,8 @@ import { PlayingCard } from '../types/playing-card';
 import { Rank } from '../types/rank';
 
 class PlayerHand {
+  doubleDown: boolean = false;
+
   private cards: PlayingCard[];
 
   constructor(cards: PlayingCard[] = []) {
@@ -77,7 +79,15 @@ class PlayerHand {
     return this.cards[0].rank === this.cards[1].rank;
   }
 
-  deal(card: PlayingCard): void {
+  deal(card: PlayingCard, doubleDown: boolean = false): void {
+    if (this.doubleDown) {
+      throw new Error('Player already doubled down. Player cannot be dealt more cards.');
+    }
+
+    if (doubleDown) {
+      this.doubleDown = true;
+    }
+
     this.cards.push(card);
   }
 }
