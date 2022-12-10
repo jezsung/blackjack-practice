@@ -1,66 +1,12 @@
 import { PlayingCard } from '../types/playing-card';
 import { Rank } from '../types/rank';
+import { Hand } from './hand';
 
-class PlayerHand {
-  doubleDown: boolean = false;
-
-  private cards: PlayingCard[];
+class PlayerHand extends Hand {
+  didDoubleDown: boolean = false;
 
   constructor(cards: PlayingCard[] = []) {
-    this.cards = cards;
-  }
-
-  get sum(): number {
-    const sum = this.cards.reduce((sum, card) => {
-      let value: number;
-
-      switch (card.rank) {
-        case '2':
-          value = 2;
-          break;
-        case '3':
-          value = 3;
-          break;
-        case '4':
-          value = 4;
-          break;
-        case '5':
-          value = 5;
-          break;
-        case '6':
-          value = 6;
-          break;
-        case '7':
-          value = 7;
-          break;
-        case '8':
-          value = 8;
-          break;
-        case '9':
-          value = 9;
-        case '10':
-        case 'jack':
-        case 'queen':
-        case 'king':
-          value = 10;
-          break;
-        case 'ace':
-          value = sum > 10 ? 1 : 11;
-          break;
-      }
-
-      return sum + value;
-    }, 0);
-
-    return sum;
-  }
-
-  get blackjack(): boolean {
-    return this.cards.length === 2 && this.sum === 21;
-  }
-
-  get bust(): boolean {
-    return this.sum > 21;
+    super(cards);
   }
 
   get splitable(): boolean {
@@ -79,15 +25,20 @@ class PlayerHand {
     return this.cards[0].rank === this.cards[1].rank;
   }
 
-  deal(card: PlayingCard, doubleDown: boolean = false): void {
-    if (this.doubleDown) {
-      throw new Error('Player already doubled down. Player cannot be dealt more cards.');
+  deal(...card: PlayingCard[]): void {
+    if (this.didDoubleDown) {
+      throw new Error('Player already did double down. Player cannot be dealt more cards.');
     }
 
-    if (doubleDown) {
-      this.doubleDown = true;
+    this.cards.push(...card);
+  }
+
+  doubleDown(card: PlayingCard) {
+    if (this.didDoubleDown) {
+      throw new Error('Player already did double down. Player cannot be dealt more cards.');
     }
 
+    this.didDoubleDown = true;
     this.cards.push(card);
   }
 }
