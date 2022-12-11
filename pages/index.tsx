@@ -22,7 +22,7 @@ export default function Home() {
           <PlayingCardView key={`${card.rank}${card.suit}`} card={card} />
         ))}
       </div>
-      <div className={classNames('absolute bottom-8 left-1/2 -translate-x-1/2 flex')}>
+      <div className={classNames('absolute bottom-48 left-1/2 -translate-x-1/2 flex')}>
         {playerHands.map((hand, i) => (
           <div key={i} className={classNames('flex gap-1')}>
             {hand.cards.map((card) => (
@@ -30,6 +30,12 @@ export default function Home() {
             ))}
           </div>
         ))}
+      </div>
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
+        <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Hit</button>
+        <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Stand</button>
+        <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Double Down</button>
+        <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Split</button>
       </div>
     </div>
   );
