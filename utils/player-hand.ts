@@ -1,8 +1,11 @@
+import { immerable } from 'immer';
 import { PlayingCard } from '../types/playing-card';
 import { Rank } from '../types/rank';
 import { Hand } from './hand';
 
 class PlayerHand extends Hand {
+  [immerable] = true;
+
   didDoubleDown: boolean = false;
 
   constructor(cards: PlayingCard[] = []) {

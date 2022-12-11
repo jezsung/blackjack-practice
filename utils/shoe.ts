@@ -1,9 +1,12 @@
+import { immerable } from 'immer';
 import { Face } from '../types/face';
 import { PlayingCard } from '../types/playing-card';
 import { ranks } from '../types/rank';
 import { suits } from '../types/suit';
 
 class Shoe {
+  [immerable] = true;
+
   private cards: PlayingCard[];
 
   constructor(deckCount: number) {

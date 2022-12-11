@@ -1,7 +1,10 @@
+import { immerable } from 'immer';
 import { PlayingCard } from '../types/playing-card';
 
 abstract class Hand {
-  protected cards: PlayingCard[];
+  [immerable] = true;
+
+  cards: PlayingCard[];
 
   constructor(cards: PlayingCard[] = []) {
     this.cards = cards;
