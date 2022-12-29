@@ -2,28 +2,37 @@ import classNames from 'classnames';
 import PlayingCardView from '../components/PlayingCardView';
 import { useAppDispatch } from '../hooks/use-app-dispatch';
 import { useAppSelector } from '../hooks/use-app-selector';
-import { bet, start } from '../store/slices/blackjack';
+import {
+  bet,
+  selectBalance,
+  selectBet,
+  selectDealerHand,
+  selectDealerUpcard,
+  selectPlayerHand,
+  start,
+} from '../store/slices/blackjack';
 
 export default function Home() {
   const dispatch = useAppDispatch();
 
-  const dealerHand = useAppSelector((state) => state.blackjack.dealerHand);
-  const playerHands = useAppSelector((state) => state.blackjack.playerHands);
-  const balance = useAppSelector((state) => state.blackjack.balance);
-  const betAmount = useAppSelector((state) => state.blackjack.betAmount);
+  const dealerHand = useAppSelector(selectDealerHand);
+  const playerHand = useAppSelector(selectPlayerHand);
+  const balance = useAppSelector(selectBalance);
+  const betAmount = useAppSelector(selectBet);
+  const dealerUpcard = useAppSelector(selectDealerUpcard);
 
   return (
     <div className={classNames('relative h-screen')}>
       <div className={classNames('absolute top-8 left-1/2 -translate-x-1/2 flex gap-1')}>
-        {dealerHand.cards.map((card) => (
+        {dealerHand.map((card) => (
           <PlayingCardView key={`${card.rank}${card.suit}`} card={card} />
         ))}
       </div>
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-8">
         <div className="flex gap-1">
-          {playerHands.map((hand, i) => (
+          {playerHand.map((hand, i) => (
             <div key={i} className={classNames('flex gap-1')}>
-              {hand.cards.map((card) => (
+              {hand.map((card) => (
                 <PlayingCardView key={`${card.rank}${card.suit}`} card={card} />
               ))}
             </div>
@@ -76,7 +85,7 @@ export default function Home() {
         </div>
       </div>
 
-      {dealerHand.upcard?.rank === 'ace' && (
+      {dealerUpcard?.rank === 'ace' && (
         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white p-4 rounded">
           <div className="flex flex-col justify-center items-center">
             <div className="mb-8 text-xl">Insurance?</div>

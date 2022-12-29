@@ -1,20 +1,24 @@
-import { createSlice, Draft, PayloadAction } from '@reduxjs/toolkit';
-import { DealerHand } from '../../utils/dealer-hand';
-import { PlayerHand } from '../../utils/player-hand';
-import { Shoe } from '../../utils/shoe';
+import { AnyAction, createSlice, Draft, PayloadAction, ThunkAction } from '@reduxjs/toolkit';
+import { RootState } from '..';
+import { Face } from '../../types/face';
+import { PlayingCard } from '../../types/playing-card';
+import { ranks } from '../../types/rank';
+import { suits } from '../../types/suit';
 
 interface BlackjackState {
-  shoe: Shoe;
-  dealerHand: DealerHand;
-  playerHands: PlayerHand[];
+  deck: PlayingCard[];
+  dealerHand: PlayingCard[];
+  playerHand: PlayingCard[][];
+  currentHandIndex: number;
   balance: number;
   betAmount: number;
 }
 
 const initialState: BlackjackState = {
-  shoe: new Shoe(2),
-  dealerHand: new DealerHand(),
-  playerHands: [new PlayerHand()],
+  deck: [],
+  dealerHand: [],
+  playerHand: [[]],
+  currentHandIndex: 0,
   balance: 1000,
   betAmount: 0,
 };
@@ -23,6 +27,29 @@ const slice = createSlice({
   name: 'blackjack',
   initialState: initialState,
   reducers: {
+    shuffle: (state: Draft<BlackjackState>, action: PayloadAction<number>) => {
+      const deck: PlayingCard[] = [];
+      const deckCount = action.payload ?? 2;
+
+      for (let i = 0; i < deckCount; i++) {
+        for (const rank of ranks) {
+          for (const suit of suits) {
+            deck.push({
+              face: 'down',
+              rank: rank,
+              suit: suit,
+            });
+          }
+        }
+      }
+
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+
+      state.deck = deck;
+    },
     bet: (state: Draft<BlackjackState>, action: PayloadAction<number>) => {
       const currentBetAmount = state.betAmount;
 
@@ -39,18 +66,64 @@ const slice = createSlice({
       state.balance -= betAmount;
       state.betAmount = betAmount;
     },
-    start: (state: Draft<BlackjackState>) => {
-      state.shoe = new Shoe(2);
-      state.dealerHand = new DealerHand();
-      state.playerHands = [new PlayerHand()];
+    deal: (state: Draft<BlackjackState>, action: PayloadAction<{ to: 'dealer' | 'player'; face: Face }>) => {
+      const drawnCard = state.deck.pop();
 
-      const shoe = state.shoe;
+      if (!drawnCard) {
+        return;
+      }
 
-      state.dealerHand.deal(shoe.draw(), shoe.draw('down'));
-      state.playerHands[0].deal(shoe.draw(), shoe.draw());
+      drawnCard.face = action.payload.face;
+
+      switch (action.payload.to) {
+        case 'player':
+          state.playerHand[state.currentHandIndex].push(drawnCard);
+          break;
+        case 'dealer':
+          state.dealerHand.push(drawnCard);
+          break;
+      }
     },
   },
 });
 
+const start = (): ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
+  dispatch(shuffle(2));
+  dispatch(deal({ to: 'player', face: 'up' }));
+  dispatch(deal({ to: 'dealer', face: 'up' }));
+  dispatch(deal({ to: 'player', face: 'up' }));
+  dispatch(deal({ to: 'dealer', face: 'down' }));
+};
+
+const selectDealerHand = (state: RootState): PlayingCard[] => state.blackjack.dealerHand;
+
+const selectPlayerHand = (state: RootState): PlayingCard[][] => state.blackjack.playerHand;
+
+const selectDealerUpcard = (state: RootState): PlayingCard | null => {
+  const cards = state.blackjack.dealerHand;
+
+  if (cards.length !== 2) {
+    return null;
+  }
+
+  return cards.find((card) => card.face === 'up')!;
+};
+
+const selectDealerHoleCard = (state: RootState): PlayingCard | null => {
+  const cards = state.blackjack.dealerHand;
+
+  if (cards.length !== 2) {
+    return null;
+  }
+
+  return cards.find((card) => card.face === 'down')!;
+};
+
+const selectBalance = (state: RootState): number => state.blackjack.balance;
+
+const selectBet = (state: RootState): number => state.blackjack.betAmount;
+
 export const { reducer: blackjackReducer } = slice;
-export const { bet, start } = slice.actions;
+export const { shuffle, bet, deal } = slice.actions;
+export { start };
+export { selectDealerHand, selectPlayerHand, selectDealerUpcard, selectDealerHoleCard, selectBalance, selectBet };
