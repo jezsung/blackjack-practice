@@ -12,6 +12,7 @@ interface BlackjackState {
   currentHandIndex: number;
   balance: number;
   betAmount: number;
+  insured: boolean;
 }
 
 const initialState: BlackjackState = {
@@ -21,6 +22,7 @@ const initialState: BlackjackState = {
   currentHandIndex: 0,
   balance: 1000,
   betAmount: 0,
+  insured: false,
 };
 
 const slice = createSlice({
@@ -84,6 +86,14 @@ const slice = createSlice({
           break;
       }
     },
+    insure: (state: Draft<BlackjackState>) => {
+      if (state.balance < state.betAmount / 2) {
+        return;
+      }
+
+      state.balance -= state.betAmount / 2;
+      state.insured = true;
+    },
   },
 });
 
@@ -123,7 +133,17 @@ const selectBalance = (state: RootState): number => state.blackjack.balance;
 
 const selectBet = (state: RootState): number => state.blackjack.betAmount;
 
+const selectInsured = (state: RootState): boolean => state.blackjack.insured;
+
 export const { reducer: blackjackReducer } = slice;
-export const { shuffle, bet, deal } = slice.actions;
+export const { shuffle, bet, deal, insure } = slice.actions;
 export { start };
-export { selectDealerHand, selectPlayerHand, selectDealerUpcard, selectDealerHoleCard, selectBalance, selectBet };
+export {
+  selectDealerHand,
+  selectPlayerHand,
+  selectDealerUpcard,
+  selectDealerHoleCard,
+  selectBalance,
+  selectBet,
+  selectInsured,
+};

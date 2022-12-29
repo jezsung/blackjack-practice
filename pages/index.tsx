@@ -1,13 +1,16 @@
 import classNames from 'classnames';
+import { useEffect, useState } from 'react';
 import PlayingCardView from '../components/PlayingCardView';
 import { useAppDispatch } from '../hooks/use-app-dispatch';
 import { useAppSelector } from '../hooks/use-app-selector';
 import {
   bet,
+  insure,
   selectBalance,
   selectBet,
   selectDealerHand,
   selectDealerUpcard,
+  selectInsured,
   selectPlayerHand,
   start,
 } from '../store/slices/blackjack';
@@ -20,6 +23,15 @@ export default function Home() {
   const balance = useAppSelector(selectBalance);
   const betAmount = useAppSelector(selectBet);
   const dealerUpcard = useAppSelector(selectDealerUpcard);
+  const insured = useAppSelector(selectInsured);
+
+  const [showInsurance, setShowInsurance] = useState(false);
+
+  useEffect(() => {
+    if (dealerUpcard?.rank === 'ace') {
+      setShowInsurance(true);
+    }
+  }, [dealerUpcard]);
 
   return (
     <div className={classNames('relative h-screen')}>
@@ -38,8 +50,14 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div className="flex justify-center items-center rounded-full border border-white w-9 h-9 text-white text-center">
-          {betAmount > 0 ? `\$${betAmount}` : null}
+        <div className="flex justify-center items-center gap-4">
+          <div className="invisible w-9 h-9" />
+          <div className="flex justify-center items-center rounded-full border border-white w-9 h-9 text-white text-center">
+            {betAmount > 0 ? `\$${betAmount}` : null}
+          </div>
+          <div className="flex justify-center items-center rounded-full border border-white w-9 h-9 text-white text-center">
+            {insured ? `\$${betAmount / 2}` : null}
+          </div>
         </div>
         <div className="flex gap-4">
           <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Hit</button>
@@ -85,13 +103,26 @@ export default function Home() {
         </div>
       </div>
 
-      {dealerUpcard?.rank === 'ace' && (
+      {showInsurance && (
         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white p-4 rounded">
           <div className="flex flex-col justify-center items-center">
             <div className="mb-8 text-xl">Insurance?</div>
             <div className="flex gap-4">
-              <button className="bg-gray-400 min-w-[88px] w-36 h-12 rounded text-white">No</button>
-              <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Yes</button>
+              <button
+                className="bg-gray-400 min-w-[88px] w-36 h-12 rounded text-white"
+                onClick={() => setShowInsurance(false)}
+              >
+                No
+              </button>
+              <button
+                className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
+                onClick={() => {
+                  dispatch(insure());
+                  setShowInsurance(false);
+                }}
+              >
+                Yes
+              </button>
             </div>
           </div>
         </div>
