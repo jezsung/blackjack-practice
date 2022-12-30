@@ -4,6 +4,8 @@ import { Face } from '../../types/face';
 import { PlayingCard } from '../../types/playing-card';
 import { ranks } from '../../types/rank';
 import { suits } from '../../types/suit';
+import { delay } from '../../utils/delay';
+import { getSumOfCards } from '../../utils/get-sum-of-cards';
 
 interface BlackjackState {
   deck: PlayingCard[];
@@ -94,22 +96,69 @@ const slice = createSlice({
       state.balance -= state.betAmount / 2;
       state.insured = true;
     },
+    revealHoleCard: (state: Draft<BlackjackState>) => {
+      const holeCardIndex = state.dealerHand.findIndex((card) => card.face === 'down');
+
+      if (holeCardIndex === -1) {
+        return;
+      }
+
+      state.dealerHand[holeCardIndex].face = 'up';
+    },
+    win: (state: Draft<BlackjackState>) => {
+      if (state.insured) {
+        state.balance += state.betAmount + state.betAmount / 2;
+      } else {
+        state.balance += state.betAmount;
+      }
+      state.betAmount = 0;
+      state.insured = false;
+      state.currentHandIndex = 0;
+    },
+    discard: (state: Draft<BlackjackState>) => {
+      state.dealerHand = [];
+      state.playerHand = [];
+    },
   },
 });
 
-const start = (): ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
-  dispatch(shuffle(2));
-  dispatch(deal({ to: 'player', face: 'up' }));
-  dispatch(deal({ to: 'dealer', face: 'up' }));
-  dispatch(deal({ to: 'player', face: 'up' }));
-  dispatch(deal({ to: 'dealer', face: 'down' }));
+const actions = slice.actions;
+
+export const { reducer: blackjackReducer } = slice;
+export const { bet } = actions;
+
+export const start = (): ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
+  dispatch(actions.shuffle(2));
+  dispatch(actions.deal({ to: 'player', face: 'up' }));
+  dispatch(actions.deal({ to: 'dealer', face: 'up' }));
+  dispatch(actions.deal({ to: 'player', face: 'up' }));
+  dispatch(actions.deal({ to: 'dealer', face: 'down' }));
 };
 
-const selectDealerHand = (state: RootState): PlayingCard[] => state.blackjack.dealerHand;
+export const insure = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
+  dispatch(actions.insure());
+  await delay(1000);
 
-const selectPlayerHand = (state: RootState): PlayingCard[][] => state.blackjack.playerHand;
+  const dealerHand = getState().blackjack.dealerHand;
+  const sumOfDealerCards = getSumOfCards(dealerHand);
 
-const selectDealerUpcard = (state: RootState): PlayingCard | null => {
+  if (sumOfDealerCards !== 21) {
+    return;
+  }
+
+  dispatch(actions.revealHoleCard());
+  await delay(1000);
+
+  dispatch(actions.win());
+
+  dispatch(actions.discard());
+};
+
+export const selectDealerHand = (state: RootState): PlayingCard[] => state.blackjack.dealerHand;
+
+export const selectPlayerHand = (state: RootState): PlayingCard[][] => state.blackjack.playerHand;
+
+export const selectDealerUpcard = (state: RootState): PlayingCard | null => {
   const cards = state.blackjack.dealerHand;
 
   if (cards.length !== 2) {
@@ -119,7 +168,7 @@ const selectDealerUpcard = (state: RootState): PlayingCard | null => {
   return cards.find((card) => card.face === 'up')!;
 };
 
-const selectDealerHoleCard = (state: RootState): PlayingCard | null => {
+export const selectDealerHoleCard = (state: RootState): PlayingCard | null => {
   const cards = state.blackjack.dealerHand;
 
   if (cards.length !== 2) {
@@ -129,21 +178,8 @@ const selectDealerHoleCard = (state: RootState): PlayingCard | null => {
   return cards.find((card) => card.face === 'down')!;
 };
 
-const selectBalance = (state: RootState): number => state.blackjack.balance;
+export const selectBalance = (state: RootState): number => state.blackjack.balance;
 
-const selectBet = (state: RootState): number => state.blackjack.betAmount;
+export const selectBet = (state: RootState): number => state.blackjack.betAmount;
 
-const selectInsured = (state: RootState): boolean => state.blackjack.insured;
-
-export const { reducer: blackjackReducer } = slice;
-export const { shuffle, bet, deal, insure } = slice.actions;
-export { start };
-export {
-  selectDealerHand,
-  selectPlayerHand,
-  selectDealerUpcard,
-  selectDealerHoleCard,
-  selectBalance,
-  selectBet,
-  selectInsured,
-};
+export const selectInsured = (state: RootState): boolean => state.blackjack.insured;
