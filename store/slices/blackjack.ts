@@ -1,5 +1,6 @@
 import { AnyAction, createSlice, Draft, PayloadAction, ThunkAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
+import { BlackjackStatus } from '../../types/blackjack-status';
 import { Face } from '../../types/face';
 import { PlayingCard } from '../../types/playing-card';
 import { ranks } from '../../types/rank';
@@ -8,6 +9,7 @@ import { delay } from '../../utils/delay';
 import { getSumOfCards } from '../../utils/get-sum-of-cards';
 
 interface BlackjackState {
+  status: BlackjackStatus;
   deck: PlayingCard[];
   dealerHand: PlayingCard[];
   playerHand: PlayingCard[][];
@@ -18,6 +20,7 @@ interface BlackjackState {
 }
 
 const initialState: BlackjackState = {
+  status: 'betting',
   deck: [],
   dealerHand: [],
   playerHand: [[]],
@@ -119,6 +122,9 @@ const slice = createSlice({
       state.dealerHand = [];
       state.playerHand = [];
     },
+    changeStatus: (state: Draft<BlackjackState>, action: PayloadAction<BlackjackStatus>) => {
+      state.status = action.payload;
+    },
   },
 });
 
@@ -127,12 +133,30 @@ const actions = slice.actions;
 export const { reducer: blackjackReducer } = slice;
 export const { bet } = actions;
 
-export const start = (): ThunkAction<void, RootState, unknown, AnyAction> => (dispatch) => {
+export const start = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
   dispatch(actions.shuffle(2));
+
+  dispatch(actions.changeStatus('dealing'));
+
   dispatch(actions.deal({ to: 'player', face: 'up' }));
+  await delay(250);
+
   dispatch(actions.deal({ to: 'dealer', face: 'up' }));
+  await delay(250);
+
   dispatch(actions.deal({ to: 'player', face: 'up' }));
+  await delay(250);
+
   dispatch(actions.deal({ to: 'dealer', face: 'down' }));
+  await delay(250);
+
+  const dealerUpcard = selectDealerUpcard(getState());
+
+  if (dealerUpcard !== null && dealerUpcard.rank === 'ace') {
+    dispatch(actions.changeStatus('insuring'));
+  } else {
+    dispatch(actions.changeStatus('acting'));
+  }
 };
 
 export const insure = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
@@ -153,6 +177,8 @@ export const insure = (): ThunkAction<void, RootState, unknown, AnyAction> => as
 
   dispatch(actions.discard());
 };
+
+export const selectStatus = (state: RootState): BlackjackStatus => state.blackjack.status;
 
 export const selectDealerHand = (state: RootState): PlayingCard[] => state.blackjack.dealerHand;
 

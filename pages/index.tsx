@@ -12,12 +12,14 @@ import {
   selectDealerUpcard,
   selectInsured,
   selectPlayerHand,
+  selectStatus,
   start,
 } from '../store/slices/blackjack';
 
 export default function Home() {
   const dispatch = useAppDispatch();
 
+  const status = useAppSelector(selectStatus);
   const dealerHand = useAppSelector(selectDealerHand);
   const playerHand = useAppSelector(selectPlayerHand);
   const balance = useAppSelector(selectBalance);
@@ -28,10 +30,10 @@ export default function Home() {
   const [showInsurance, setShowInsurance] = useState(false);
 
   useEffect(() => {
-    if (dealerUpcard?.rank === 'ace') {
+    if (status === 'insuring') {
       setShowInsurance(true);
     }
-  }, [dealerUpcard]);
+  }, [status]);
 
   return (
     <div className={classNames('relative h-screen')}>
