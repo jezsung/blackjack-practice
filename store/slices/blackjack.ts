@@ -50,29 +50,6 @@ const slice = createSlice({
   name: 'blackjack',
   initialState: initialState,
   reducers: {
-    shuffle: (state: Draft<BlackjackState>, action: PayloadAction<number>) => {
-      const deck: PlayingCard[] = [];
-      const deckCount = action.payload ?? 2;
-
-      for (let i = 0; i < deckCount; i++) {
-        for (const rank of ranks) {
-          for (const suit of suits) {
-            deck.push({
-              face: 'down',
-              rank: rank,
-              suit: suit,
-            });
-          }
-        }
-      }
-
-      for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-      }
-
-      state.deck = deck;
-    },
     bet: (state: Draft<BlackjackState>, action: PayloadAction<number>) => {
       const currentBetAmount = state.betAmount;
 
@@ -88,6 +65,59 @@ const slice = createSlice({
 
       state.balance -= betAmount;
       state.betAmount = betAmount;
+    },
+    start: (state: Draft<BlackjackState>) => {
+      const shuffle = () => {
+        const deck: PlayingCard[] = [];
+        const deckCount = 2;
+
+        for (let i = 0; i < deckCount; i++) {
+          for (const rank of ranks) {
+            for (const suit of suits) {
+              deck.push({
+                face: 'down',
+                rank: rank,
+                suit: suit,
+              });
+            }
+          }
+        }
+
+        for (let i = deck.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+
+        state.deck = deck;
+      };
+
+      const draw = (face: Face = 'up'): PlayingCard => {
+        const drawnCard = state.deck.pop()!;
+        drawnCard.face = face;
+        return drawnCard;
+      };
+
+      shuffle();
+      state.dealerHand.cards = [];
+      state.playerHands = [
+        {
+          cards: [],
+          doubledDown: false,
+        },
+      ];
+
+      state.status = 'dealing';
+      state.playerHands[0].cards.push(draw());
+      state.dealerHand.cards.push(draw());
+      state.playerHands[0].cards.push(draw());
+      state.dealerHand.cards.push(draw('down'));
+
+      const upcard = state.dealerHand.cards.find((card) => card.face === 'up');
+      if (upcard?.rank === 'ace') {
+        state.status = 'insuring';
+      } else {
+        state.status = 'acting';
+      }
     },
     deal: (
       state: Draft<BlackjackState>,
@@ -170,33 +200,7 @@ const slice = createSlice({
 const actions = slice.actions;
 
 export const { reducer: blackjackReducer } = slice;
-export const { bet } = actions;
-
-export const start = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
-  dispatch(actions.shuffle(2));
-
-  dispatch(actions.changeStatus('dealing'));
-
-  dispatch(actions.deal({ to: 'player', face: 'up' }));
-  await delay(250);
-
-  dispatch(actions.deal({ to: 'dealer', face: 'up' }));
-  await delay(250);
-
-  dispatch(actions.deal({ to: 'player', face: 'up' }));
-  await delay(250);
-
-  dispatch(actions.deal({ to: 'dealer', face: 'down' }));
-  await delay(250);
-
-  const dealerUpcard = selectDealerUpcard(getState());
-
-  if (dealerUpcard !== null && dealerUpcard.rank === 'ace') {
-    dispatch(actions.changeStatus('insuring'));
-  } else {
-    dispatch(actions.changeStatus('acting'));
-  }
-};
+export const { start, bet } = actions;
 
 export const hit = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
   dispatch(actions.deal({ to: 'player', face: 'up' }));
