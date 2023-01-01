@@ -63,59 +63,72 @@ export default function Home() {
             {insured ? `\$${betAmount / 2}` : null}
           </div>
         </div>
-        <div className="flex gap-4">
-          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white" onClick={() => dispatch(hit())}>
-            Hit
-          </button>
-          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white" onClick={() => dispatch(stand())}>
-            Stand
-          </button>
-          <button
-            className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
-            onClick={() => dispatch(doubleDown())}
-          >
-            Double Down
-          </button>
-          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white" onClick={() => dispatch(split())}>
-            Split
-          </button>
-        </div>
+        {status === 'acting' && (
+          <div className="flex gap-4">
+            <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white" onClick={() => dispatch(hit())}>
+              Hit
+            </button>
+            <button
+              className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
+              onClick={() => dispatch(stand())}
+            >
+              Stand
+            </button>
+            <button
+              className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
+              onClick={() => dispatch(doubleDown())}
+            >
+              Double Down
+            </button>
+            <button
+              className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
+              onClick={() => dispatch(split())}
+            >
+              Split
+            </button>
+          </div>
+        )}
         <div className="text-white text-xl">${balance}</div>
-        <div className="flex gap-4">
-          <button
-            className="bg-white rounded-full border-2 border-black border-dashed w-12 h-12 text-black"
-            onClick={() => dispatch(bet(5))}
-          >
-            $5
-          </button>
-          <button
-            className="bg-red-700 rounded-full border-2 border-gray-200 border-dashed w-12 h-12 text-gray-200"
-            onClick={() => dispatch(bet(10))}
-          >
-            $10
-          </button>
-          <button
-            className="bg-green-600 rounded-full border-2 border-gray-200 border-dashed w-12 h-12 text-gray-200"
-            onClick={() => dispatch(bet(20))}
-          >
-            $20
-          </button>
-          <button
-            className="bg-blue-600 rounded-full border-2 border-gray-200 border-dashed w-12 h-12 text-gray-200"
-            onClick={() => dispatch(bet(50))}
-          >
-            $50
-          </button>
-          <button
-            className="bg-black rounded-full border-2 border-gray-200 border-dashed w-12 h-12 text-gray-200"
-            onClick={() => dispatch(bet(100))}
-          >
-            $100
-          </button>
-          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white" onClick={() => dispatch(start())}>
-            Start
-          </button>
-        </div>
+        {status === 'betting' && (
+          <div className="flex gap-4">
+            <button
+              className="bg-white rounded-full border-2 border-black border-dashed w-12 h-12 text-black"
+              onClick={() => dispatch(bet(5))}
+            >
+              $5
+            </button>
+            <button
+              className="bg-red-700 rounded-full border-2 border-gray-200 border-dashed w-12 h-12 text-gray-200"
+              onClick={() => dispatch(bet(10))}
+            >
+              $10
+            </button>
+            <button
+              className="bg-green-600 rounded-full border-2 border-gray-200 border-dashed w-12 h-12 text-gray-200"
+              onClick={() => dispatch(bet(20))}
+            >
+              $20
+            </button>
+            <button
+              className="bg-blue-600 rounded-full border-2 border-gray-200 border-dashed w-12 h-12 text-gray-200"
+              onClick={() => dispatch(bet(50))}
+            >
+              $50
+            </button>
+            <button
+              className="bg-black rounded-full border-2 border-gray-200 border-dashed w-12 h-12 text-gray-200"
+              onClick={() => dispatch(bet(100))}
+            >
+              $100
+            </button>
+            <button
+              className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
+              onClick={() => dispatch(start())}
+            >
+              Start
+            </button>
+          </div>
+        )}
       </div>
 
       {showInsurance && (
