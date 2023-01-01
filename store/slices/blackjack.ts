@@ -6,7 +6,6 @@ import { PlayingCard } from '../../types/playing-card';
 import { ranks } from '../../types/rank';
 import { suits } from '../../types/suit';
 import { delay } from '../../utils/delay';
-import { getSumOfCards } from '../../utils/get-sum-of-cards';
 import { isSplitable } from '../../utils/is-splitable';
 
 interface DealerHand {
@@ -257,10 +256,9 @@ export const insure = (): ThunkAction<void, RootState, unknown, AnyAction> => as
   dispatch(actions.insure());
   await delay(1000);
 
-  const dealerHand = getState().blackjack.dealerHand;
-  const sumOfDealerCards = getSumOfCards(dealerHand.cards);
+  const dealerCardValue = selectDealerCardValue(getState());
 
-  if (sumOfDealerCards !== 21) {
+  if (dealerCardValue !== 21) {
     return;
   }
 
