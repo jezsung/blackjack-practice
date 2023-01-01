@@ -5,14 +5,17 @@ import { useAppDispatch } from '../hooks/use-app-dispatch';
 import { useAppSelector } from '../hooks/use-app-selector';
 import {
   bet,
+  doubleDown,
+  hit,
   insure,
   selectBalance,
   selectBet,
   selectDealerHand,
-  selectDealerUpcard,
   selectInsured,
-  selectPlayerHand,
+  selectPlayerHands,
   selectStatus,
+  split,
+  stand,
   start,
 } from '../store/slices/blackjack';
 
@@ -21,10 +24,9 @@ export default function Home() {
 
   const status = useAppSelector(selectStatus);
   const dealerHand = useAppSelector(selectDealerHand);
-  const playerHand = useAppSelector(selectPlayerHand);
+  const playerHands = useAppSelector(selectPlayerHands);
   const balance = useAppSelector(selectBalance);
   const betAmount = useAppSelector(selectBet);
-  const dealerUpcard = useAppSelector(selectDealerUpcard);
   const insured = useAppSelector(selectInsured);
 
   const [showInsurance, setShowInsurance] = useState(false);
@@ -38,15 +40,15 @@ export default function Home() {
   return (
     <div className={classNames('relative h-screen')}>
       <div className={classNames('absolute top-8 left-1/2 -translate-x-1/2 flex gap-1')}>
-        {dealerHand.map((card) => (
+        {dealerHand.cards.map((card) => (
           <PlayingCardView key={`${card.rank}${card.suit}`} card={card} />
         ))}
       </div>
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-8">
-        <div className="flex gap-1">
-          {playerHand.map((hand, i) => (
+        <div className="flex gap-8">
+          {playerHands.map((hand, i) => (
             <div key={i} className={classNames('flex gap-1')}>
-              {hand.map((card) => (
+              {hand.cards.map((card) => (
                 <PlayingCardView key={`${card.rank}${card.suit}`} card={card} />
               ))}
             </div>
@@ -62,10 +64,21 @@ export default function Home() {
           </div>
         </div>
         <div className="flex gap-4">
-          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Hit</button>
-          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Stand</button>
-          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Double Down</button>
-          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white">Split</button>
+          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white" onClick={() => dispatch(hit())}>
+            Hit
+          </button>
+          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white" onClick={() => dispatch(stand())}>
+            Stand
+          </button>
+          <button
+            className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
+            onClick={() => dispatch(doubleDown())}
+          >
+            Double Down
+          </button>
+          <button className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white" onClick={() => dispatch(split())}>
+            Split
+          </button>
         </div>
         <div className="text-white text-xl">${balance}</div>
         <div className="flex gap-4">

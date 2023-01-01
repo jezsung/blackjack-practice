@@ -7,12 +7,22 @@ import { ranks } from '../../types/rank';
 import { suits } from '../../types/suit';
 import { delay } from '../../utils/delay';
 import { getSumOfCards } from '../../utils/get-sum-of-cards';
+import { isSplitable } from '../../utils/is-splitable';
+
+interface DealerHand {
+  cards: PlayingCard[];
+}
+
+interface PlayerHand {
+  cards: PlayingCard[];
+  doubledDown: boolean;
+}
 
 interface BlackjackState {
   status: BlackjackStatus;
   deck: PlayingCard[];
-  dealerHand: PlayingCard[];
-  playerHand: PlayingCard[][];
+  dealerHand: DealerHand;
+  playerHands: PlayerHand[];
   currentHandIndex: number;
   balance: number;
   betAmount: number;
@@ -22,8 +32,15 @@ interface BlackjackState {
 const initialState: BlackjackState = {
   status: 'betting',
   deck: [],
-  dealerHand: [],
-  playerHand: [[]],
+  dealerHand: {
+    cards: [],
+  },
+  playerHands: [
+    {
+      cards: [],
+      doubledDown: false,
+    },
+  ],
   currentHandIndex: 0,
   balance: 1000,
   betAmount: 0,
@@ -73,7 +90,10 @@ const slice = createSlice({
       state.balance -= betAmount;
       state.betAmount = betAmount;
     },
-    deal: (state: Draft<BlackjackState>, action: PayloadAction<{ to: 'dealer' | 'player'; face: Face }>) => {
+    deal: (
+      state: Draft<BlackjackState>,
+      action: PayloadAction<{ to: 'dealer' | 'player'; face: Face; index?: number | undefined }>
+    ) => {
       const drawnCard = state.deck.pop();
 
       if (!drawnCard) {
@@ -82,12 +102,14 @@ const slice = createSlice({
 
       drawnCard.face = action.payload.face;
 
+      const index = action.payload.index ?? state.currentHandIndex;
+
       switch (action.payload.to) {
         case 'player':
-          state.playerHand[state.currentHandIndex].push(drawnCard);
+          state.playerHands[index].cards.push(drawnCard);
           break;
         case 'dealer':
-          state.dealerHand.push(drawnCard);
+          state.dealerHand.cards.push(drawnCard);
           break;
       }
     },
@@ -100,13 +122,13 @@ const slice = createSlice({
       state.insured = true;
     },
     revealHoleCard: (state: Draft<BlackjackState>) => {
-      const holeCardIndex = state.dealerHand.findIndex((card) => card.face === 'down');
+      const holeCardIndex = state.dealerHand.cards.findIndex((card) => card.face === 'down');
 
       if (holeCardIndex === -1) {
         return;
       }
 
-      state.dealerHand[holeCardIndex].face = 'up';
+      state.dealerHand.cards[holeCardIndex].face = 'up';
     },
     win: (state: Draft<BlackjackState>) => {
       if (state.insured) {
@@ -119,11 +141,29 @@ const slice = createSlice({
       state.currentHandIndex = 0;
     },
     discard: (state: Draft<BlackjackState>) => {
-      state.dealerHand = [];
-      state.playerHand = [];
+      state.dealerHand.cards = [];
+      state.playerHands = [{ cards: [], doubledDown: false }];
     },
     changeStatus: (state: Draft<BlackjackState>, action: PayloadAction<BlackjackStatus>) => {
       state.status = action.payload;
+    },
+    incrementCurrentHandIndex: (state: Draft<BlackjackState>) => {
+      state.currentHandIndex += 1;
+    },
+    markDoubleDown: (state: Draft<BlackjackState>) => {
+      state.playerHands[state.currentHandIndex].doubledDown = true;
+    },
+    split: (state: Draft<BlackjackState>) => {
+      const hand = state.playerHands[state.currentHandIndex];
+      const [card1, card2] = [hand.cards[0], hand.cards[1]];
+      state.playerHands[state.currentHandIndex] = {
+        ...hand,
+        cards: [card1],
+      };
+      state.playerHands[state.currentHandIndex + 1] = {
+        ...hand,
+        cards: [card2],
+      };
     },
   },
 });
@@ -159,12 +199,66 @@ export const start = (): ThunkAction<void, RootState, unknown, AnyAction> => asy
   }
 };
 
+export const hit = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch) => {
+  dispatch(actions.deal({ to: 'player', face: 'up' }));
+};
+
+export const stand = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
+  const currentState = getState();
+  const playerHands = currentState.blackjack.playerHands;
+  const currentHandIndex = currentState.blackjack.currentHandIndex;
+
+  if (currentHandIndex < playerHands.length - 1) {
+    dispatch(actions.incrementCurrentHandIndex());
+  } else {
+    dispatch(actions.changeStatus('drawing'));
+  }
+};
+
+export const doubleDown = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
+  const currentState = getState();
+  const currentHandIndex = currentState.blackjack.currentHandIndex;
+  const playerHands = currentState.blackjack.playerHands;
+  const currentHand = playerHands[currentHandIndex];
+
+  if (currentHand.cards.length !== 2) {
+    return;
+  }
+
+  dispatch(actions.deal({ to: 'player', face: 'up' }));
+  dispatch(actions.markDoubleDown());
+
+  if (currentHandIndex < playerHands.length - 1) {
+    dispatch(actions.incrementCurrentHandIndex());
+  } else {
+    dispatch(actions.changeStatus('drawing'));
+  }
+};
+
+export const split = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
+  const currentState = getState();
+  const currentHand = currentState.blackjack.playerHands[currentState.blackjack.currentHandIndex];
+
+  if (!isSplitable(currentHand.cards)) {
+    return;
+  }
+
+  dispatch(actions.split());
+  await delay(250);
+
+  dispatch(actions.deal({ to: 'player', face: 'up' }));
+  await delay(250);
+
+  dispatch(actions.deal({ to: 'player', face: 'up', index: currentState.blackjack.currentHandIndex + 1 }));
+  await delay(250);
+};
+
 export const insure = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
   dispatch(actions.insure());
   await delay(1000);
 
   const dealerHand = getState().blackjack.dealerHand;
-  const sumOfDealerCards = getSumOfCards(dealerHand);
+  const sumOfDealerCards = getSumOfCards(dealerHand.cards);
 
   if (sumOfDealerCards !== 21) {
     return;
@@ -180,12 +274,12 @@ export const insure = (): ThunkAction<void, RootState, unknown, AnyAction> => as
 
 export const selectStatus = (state: RootState): BlackjackStatus => state.blackjack.status;
 
-export const selectDealerHand = (state: RootState): PlayingCard[] => state.blackjack.dealerHand;
+export const selectDealerHand = (state: RootState): DealerHand => state.blackjack.dealerHand;
 
-export const selectPlayerHand = (state: RootState): PlayingCard[][] => state.blackjack.playerHand;
+export const selectPlayerHands = (state: RootState): PlayerHand[] => state.blackjack.playerHands;
 
 export const selectDealerUpcard = (state: RootState): PlayingCard | null => {
-  const cards = state.blackjack.dealerHand;
+  const cards = state.blackjack.dealerHand.cards;
 
   if (cards.length !== 2) {
     return null;
@@ -195,7 +289,7 @@ export const selectDealerUpcard = (state: RootState): PlayingCard | null => {
 };
 
 export const selectDealerHoleCard = (state: RootState): PlayingCard | null => {
-  const cards = state.blackjack.dealerHand;
+  const cards = state.blackjack.dealerHand.cards;
 
   if (cards.length !== 2) {
     return null;
