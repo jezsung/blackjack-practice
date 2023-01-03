@@ -1,5 +1,4 @@
 import classNames from 'classnames';
-import { useEffect, useState } from 'react';
 import PlayingCardView from '../components/PlayingCardView';
 import { useAppDispatch } from '../hooks/use-app-dispatch';
 import { useAppSelector } from '../hooks/use-app-selector';
@@ -27,14 +26,6 @@ export default function Home() {
   const balance = useAppSelector(selectBalance);
   const betAmount = useAppSelector(selectBet);
   const insured = useAppSelector(selectInsured);
-
-  const [showInsurance, setShowInsurance] = useState(false);
-
-  useEffect(() => {
-    if (status === 'insuring') {
-      setShowInsurance(true);
-    }
-  }, [status]);
 
   return (
     <div className={classNames('relative h-screen')}>
@@ -129,32 +120,21 @@ export default function Home() {
             </button>
           </div>
         )}
-      </div>
-
-      {showInsurance && (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white p-4 rounded">
+        {status === 'insuring' && (
           <div className="flex flex-col justify-center items-center">
-            <div className="mb-8 text-xl">Insurance?</div>
+            <div className="mb-8 text-white text-xl">Insurance?</div>
             <div className="flex gap-4">
-              <button
-                className="bg-gray-400 min-w-[88px] w-36 h-12 rounded text-white"
-                onClick={() => setShowInsurance(false)}
-              >
-                No
-              </button>
+              <button className="bg-gray-400 min-w-[88px] w-36 h-12 rounded text-white">No</button>
               <button
                 className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
-                onClick={() => {
-                  dispatch(bet('insurance'));
-                  setShowInsurance(false);
-                }}
+                onClick={() => dispatch(bet('insurance'))}
               >
                 Yes
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
