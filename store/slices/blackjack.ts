@@ -244,61 +244,7 @@ const slice = createSlice({
 const actions = slice.actions;
 
 export const { reducer: blackjackReducer } = slice;
-export const { start, bet } = actions;
-
-export const hit = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
-  dispatch(actions.deal({ to: 'player', face: 'up' }));
-};
-
-export const stand = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
-  const currentState = getState();
-  const playerHands = currentState.blackjack.playerHands;
-  const currentHandIndex = currentState.blackjack.currentHandIndex;
-
-  if (currentHandIndex < playerHands.length - 1) {
-    dispatch(actions.incrementCurrentHandIndex());
-  } else {
-    dispatch(actions.changeStatus('drawing'));
-  }
-};
-
-export const doubleDown = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
-  const currentState = getState();
-  const currentHandIndex = currentState.blackjack.currentHandIndex;
-  const playerHands = currentState.blackjack.playerHands;
-  const currentHand = playerHands[currentHandIndex];
-
-  if (currentHand.cards.length !== 2) {
-    return;
-  }
-
-  dispatch(actions.deal({ to: 'player', face: 'up' }));
-  dispatch(actions.markDoubleDown());
-
-  if (currentHandIndex < playerHands.length - 1) {
-    dispatch(actions.incrementCurrentHandIndex());
-  } else {
-    dispatch(actions.changeStatus('drawing'));
-  }
-};
-
-export const split = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
-  const currentState = getState();
-  const currentHand = currentState.blackjack.playerHands[currentState.blackjack.currentHandIndex];
-
-  if (!isSplitable(currentHand.cards)) {
-    return;
-  }
-
-  dispatch(actions.split());
-  await delay(250);
-
-  dispatch(actions.deal({ to: 'player', face: 'up' }));
-  await delay(250);
-
-  dispatch(actions.deal({ to: 'player', face: 'up', index: currentState.blackjack.currentHandIndex + 1 }));
-  await delay(250);
-};
+export const { bet, start, hit, stand, doubleDown, split } = actions;
 
 export const insure = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
   dispatch(actions.insure());
