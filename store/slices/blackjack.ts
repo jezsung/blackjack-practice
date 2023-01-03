@@ -128,6 +128,13 @@ const slice = createSlice({
 
       state.playerHands[state.currentHandIndex].cards.push(draw());
     },
+    stand: (state: Draft<BlackjackState>) => {
+      if (state.currentHandIndex < state.playerHands.length - 1) {
+        state.currentHandIndex += 1;
+      } else {
+        state.status = 'drawing';
+      }
+    },
     deal: (
       state: Draft<BlackjackState>,
       action: PayloadAction<{ to: 'dealer' | 'player'; face: Face; index?: number | undefined }>
