@@ -6,10 +6,11 @@ import {
   bet,
   doubleDown,
   hit,
+  insure,
   selectBalance,
   selectBet,
   selectDealerHand,
-  selectInsured,
+  selectInsurance,
   selectPlayerHands,
   selectStatus,
   split,
@@ -25,7 +26,7 @@ export default function Home() {
   const playerHands = useAppSelector(selectPlayerHands);
   const balance = useAppSelector(selectBalance);
   const betAmount = useAppSelector(selectBet);
-  const insured = useAppSelector(selectInsured);
+  const insurance = useAppSelector(selectInsurance);
 
   return (
     <div className={classNames('relative h-screen')}>
@@ -50,7 +51,7 @@ export default function Home() {
             {betAmount > 0 ? `\$${betAmount}` : null}
           </div>
           <div className="flex justify-center items-center rounded-full border border-white w-9 h-9 text-white text-center">
-            {insured ? `\$${betAmount / 2}` : null}
+            {insurance ? `\$${betAmount / 2}` : null}
           </div>
         </div>
         {status === 'acting' && (
@@ -124,10 +125,15 @@ export default function Home() {
           <div className="flex flex-col justify-center items-center">
             <div className="mb-8 text-white text-xl">Insurance?</div>
             <div className="flex gap-4">
-              <button className="bg-gray-400 min-w-[88px] w-36 h-12 rounded text-white">No</button>
+              <button
+                className="bg-gray-400 min-w-[88px] w-36 h-12 rounded text-white"
+                onClick={() => dispatch(insure('no'))}
+              >
+                No
+              </button>
               <button
                 className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
-                onClick={() => dispatch(bet('insurance'))}
+                onClick={() => dispatch(insure('yes'))}
               >
                 Yes
               </button>

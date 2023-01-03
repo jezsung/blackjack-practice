@@ -24,7 +24,7 @@ interface BlackjackState {
   currentHandIndex: number;
   balance: number;
   bet: number;
-  insurnace: boolean;
+  insurnace?: boolean | undefined;
 }
 
 const initialState: BlackjackState = {
@@ -42,31 +42,22 @@ const initialState: BlackjackState = {
   currentHandIndex: 0,
   balance: 1000,
   bet: 0,
-  insurnace: false,
+  insurnace: undefined,
 };
 
 const slice = createSlice({
   name: 'blackjack',
   initialState: initialState,
   reducers: {
-    bet: (state: Draft<BlackjackState>, action: PayloadAction<number | 'insurance'>) => {
-      if (action.payload === 'insurance') {
-        if (state.balance < state.bet / 2) {
-          return;
-        }
+    bet: (state: Draft<BlackjackState>, action: PayloadAction<number>) => {
+      const betAmount = action.payload;
 
-        state.balance -= state.bet / 2;
-        state.insurnace = true;
-      } else {
-        const betAmount = action.payload;
-
-        if (betAmount <= 0 || state.balance < betAmount) {
-          return;
-        }
-
-        state.balance = state.balance + state.bet - betAmount;
-        state.bet = betAmount;
+      if (betAmount <= 0 || state.balance < betAmount) {
+        return;
       }
+
+      state.balance = state.balance + state.bet - betAmount;
+      state.bet = betAmount;
     },
     start: (state: Draft<BlackjackState>) => {
       const shuffle = () => {
@@ -177,6 +168,20 @@ const slice = createSlice({
       state.playerHands[state.currentHandIndex].cards = [card1, draw()];
       state.playerHands[state.currentHandIndex + 1].cards = [card2, draw()];
     },
+    insure: (state: Draft<BlackjackState>, action: PayloadAction<'yes' | 'no'>) => {
+      switch (action.payload) {
+        case 'yes':
+          if (state.balance < state.bet / 2) {
+            return;
+          }
+
+          state.balance -= state.bet / 2;
+          state.insurnace = true;
+        case 'no':
+          state.insurnace = false;
+          break;
+      }
+    },
     deal: (
       state: Draft<BlackjackState>,
       action: PayloadAction<{ to: 'dealer' | 'player'; face: Face; index?: number | undefined }>
@@ -238,7 +243,7 @@ const slice = createSlice({
 const actions = slice.actions;
 
 export const { reducer: blackjackReducer } = slice;
-export const { bet, start, hit, stand, doubleDown, split } = actions;
+export const { bet, start, hit, stand, doubleDown, split, insure } = actions;
 
 export const selectStatus = (state: RootState): BlackjackStatus => state.blackjack.status;
 
@@ -270,7 +275,7 @@ export const selectBalance = (state: RootState): number => state.blackjack.balan
 
 export const selectBet = (state: RootState): number => state.blackjack.bet;
 
-export const selectInsured = (state: RootState): boolean => state.blackjack.insurnace;
+export const selectInsurance = (state: RootState): boolean | undefined => state.blackjack.insurnace;
 
 export const selectDealerCardValue = (state: RootState) => {
   const sum = state.blackjack.dealerHand.cards.reduce((sum, card) => {
