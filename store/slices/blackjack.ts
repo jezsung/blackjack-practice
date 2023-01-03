@@ -119,6 +119,15 @@ const slice = createSlice({
         state.status = 'acting';
       }
     },
+    hit: (state: Draft<BlackjackState>) => {
+      const draw = (face: Face = 'up'): PlayingCard => {
+        const drawnCard = state.deck.pop()!;
+        drawnCard.face = face;
+        return drawnCard;
+      };
+
+      state.playerHands[state.currentHandIndex].cards.push(draw());
+    },
     deal: (
       state: Draft<BlackjackState>,
       action: PayloadAction<{ to: 'dealer' | 'player'; face: Face; index?: number | undefined }>
