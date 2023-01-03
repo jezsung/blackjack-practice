@@ -135,6 +135,30 @@ const slice = createSlice({
         state.status = 'drawing';
       }
     },
+    doubleDown: (state: Draft<BlackjackState>) => {
+      if (state.balance < state.betAmount) {
+        return;
+      }
+      if (state.playerHands[state.currentHandIndex].cards.length !== 2) {
+        return;
+      }
+
+      const draw = (face: Face = 'up'): PlayingCard => {
+        const drawnCard = state.deck.pop()!;
+        drawnCard.face = face;
+        return drawnCard;
+      };
+
+      state.balance -= state.betAmount;
+      state.playerHands[state.currentHandIndex].cards.push(draw());
+      state.playerHands[state.currentHandIndex].doubledDown = true;
+
+      if (state.currentHandIndex < state.playerHands.length - 1) {
+        state.currentHandIndex += 1;
+      } else {
+        state.status = 'drawing';
+      }
+    },
     deal: (
       state: Draft<BlackjackState>,
       action: PayloadAction<{ to: 'dealer' | 'player'; face: Face; index?: number | undefined }>
