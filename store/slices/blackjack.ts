@@ -24,7 +24,7 @@ interface BlackjackState {
   currentHandIndex: number;
   balance: number;
   betAmount: number;
-  insured: boolean;
+  insurnace: boolean;
 }
 
 const initialState: BlackjackState = {
@@ -42,7 +42,7 @@ const initialState: BlackjackState = {
   currentHandIndex: 0,
   balance: 1000,
   betAmount: 0,
-  insured: false,
+  insurnace: false,
 };
 
 const slice = createSlice({
@@ -56,7 +56,7 @@ const slice = createSlice({
         }
 
         state.balance -= state.betAmount / 2;
-        state.insured = true;
+        state.insurnace = true;
       } else {
         const betAmount = action.payload;
 
@@ -210,13 +210,13 @@ const slice = createSlice({
       state.dealerHand.cards[holeCardIndex].face = 'up';
     },
     win: (state: Draft<BlackjackState>) => {
-      if (state.insured) {
+      if (state.insurnace) {
         state.balance += state.betAmount + state.betAmount / 2;
       } else {
         state.balance += state.betAmount;
       }
       state.betAmount = 0;
-      state.insured = false;
+      state.insurnace = false;
       state.currentHandIndex = 0;
     },
     discard: (state: Draft<BlackjackState>) => {
@@ -270,7 +270,7 @@ export const selectBalance = (state: RootState): number => state.blackjack.balan
 
 export const selectBet = (state: RootState): number => state.blackjack.betAmount;
 
-export const selectInsured = (state: RootState): boolean => state.blackjack.insured;
+export const selectInsured = (state: RootState): boolean => state.blackjack.insurnace;
 
 export const selectDealerCardValue = (state: RootState) => {
   const sum = state.blackjack.dealerHand.cards.reduce((sum, card) => {
