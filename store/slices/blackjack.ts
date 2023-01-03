@@ -159,6 +159,22 @@ const slice = createSlice({
         state.status = 'drawing';
       }
     },
+    split: (state: Draft<BlackjackState>) => {
+      if (!isSplitable(state.playerHands[state.currentHandIndex].cards)) {
+        return;
+      }
+
+      const draw = (face: Face = 'up'): PlayingCard => {
+        const drawnCard = state.deck.pop()!;
+        drawnCard.face = face;
+        return drawnCard;
+      };
+
+      const hand = state.playerHands[state.currentHandIndex];
+      const [card1, card2] = [hand.cards[0], hand.cards[1]];
+      state.playerHands[state.currentHandIndex].cards = [card1, draw()];
+      state.playerHands[state.currentHandIndex + 1].cards = [card2, draw()];
+    },
     deal: (
       state: Draft<BlackjackState>,
       action: PayloadAction<{ to: 'dealer' | 'player'; face: Face; index?: number | undefined }>
@@ -221,18 +237,6 @@ const slice = createSlice({
     },
     markDoubleDown: (state: Draft<BlackjackState>) => {
       state.playerHands[state.currentHandIndex].doubledDown = true;
-    },
-    split: (state: Draft<BlackjackState>) => {
-      const hand = state.playerHands[state.currentHandIndex];
-      const [card1, card2] = [hand.cards[0], hand.cards[1]];
-      state.playerHands[state.currentHandIndex] = {
-        ...hand,
-        cards: [card1],
-      };
-      state.playerHands[state.currentHandIndex + 1] = {
-        ...hand,
-        cards: [card2],
-      };
     },
   },
 });
