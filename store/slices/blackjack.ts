@@ -1,11 +1,10 @@
-import { AnyAction, createSlice, Draft, PayloadAction, ThunkAction } from '@reduxjs/toolkit';
+import { createSlice, Draft, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
 import { BlackjackStatus } from '../../types/blackjack-status';
 import { Face } from '../../types/face';
 import { PlayingCard } from '../../types/playing-card';
 import { ranks } from '../../types/rank';
 import { suits } from '../../types/suit';
-import { delay } from '../../utils/delay';
 import { isSplitable } from '../../utils/is-splitable';
 
 interface DealerHand {
@@ -50,21 +49,24 @@ const slice = createSlice({
   name: 'blackjack',
   initialState: initialState,
   reducers: {
-    bet: (state: Draft<BlackjackState>, action: PayloadAction<number>) => {
-      const currentBetAmount = state.betAmount;
+    bet: (state: Draft<BlackjackState>, action: PayloadAction<number | 'insurance'>) => {
+      if (action.payload === 'insurance') {
+        if (state.balance < state.betAmount / 2) {
+          return;
+        }
 
-      if (currentBetAmount > 0) {
-        state.balance += currentBetAmount;
+        state.balance -= state.betAmount / 2;
+        state.insured = true;
+      } else {
+        const betAmount = action.payload;
+
+        if (betAmount <= 0 || state.balance < betAmount) {
+          return;
+        }
+
+        state.balance = state.balance + state.betAmount - betAmount;
+        state.betAmount = betAmount;
       }
-
-      const betAmount = action.payload;
-
-      if (betAmount <= 0 || state.balance < betAmount) {
-        return;
-      }
-
-      state.balance -= betAmount;
-      state.betAmount = betAmount;
     },
     start: (state: Draft<BlackjackState>) => {
       const shuffle = () => {
@@ -198,14 +200,6 @@ const slice = createSlice({
           break;
       }
     },
-    insure: (state: Draft<BlackjackState>) => {
-      if (state.balance < state.betAmount / 2) {
-        return;
-      }
-
-      state.balance -= state.betAmount / 2;
-      state.insured = true;
-    },
     revealHoleCard: (state: Draft<BlackjackState>) => {
       const holeCardIndex = state.dealerHand.cards.findIndex((card) => card.face === 'down');
 
@@ -245,24 +239,6 @@ const actions = slice.actions;
 
 export const { reducer: blackjackReducer } = slice;
 export const { bet, start, hit, stand, doubleDown, split } = actions;
-
-export const insure = (): ThunkAction<void, RootState, unknown, AnyAction> => async (dispatch, getState) => {
-  dispatch(actions.insure());
-  await delay(1000);
-
-  const dealerCardValue = selectDealerCardValue(getState());
-
-  if (dealerCardValue !== 21) {
-    return;
-  }
-
-  dispatch(actions.revealHoleCard());
-  await delay(1000);
-
-  dispatch(actions.win());
-
-  dispatch(actions.discard());
-};
 
 export const selectStatus = (state: RootState): BlackjackStatus => state.blackjack.status;
 

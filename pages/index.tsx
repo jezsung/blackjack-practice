@@ -7,7 +7,6 @@ import {
   bet,
   doubleDown,
   hit,
-  insure,
   selectBalance,
   selectBet,
   selectDealerHand,
@@ -146,7 +145,7 @@ export default function Home() {
               <button
                 className="bg-[#005bdc] min-w-[88px] w-36 h-12 rounded text-white"
                 onClick={() => {
-                  dispatch(insure());
+                  dispatch(bet('insurance'));
                   setShowInsurance(false);
                 }}
               >
