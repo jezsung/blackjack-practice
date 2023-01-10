@@ -1,6 +1,6 @@
 import { PlayingCard } from '../types/playing-card';
 
-const getSumOfCards = (cards: PlayingCard[]) => {
+const getSumOfCardValues = (cards: PlayingCard[]) => {
   const sum = cards.reduce((sum, card) => {
     let value: number;
 
@@ -45,4 +45,4 @@ const getSumOfCards = (cards: PlayingCard[]) => {
   return sum;
 };
 
-export { getSumOfCards };
+export { getSumOfCardValues };
