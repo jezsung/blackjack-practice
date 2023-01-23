@@ -1,4 +1,4 @@
-const blackjackStatuses = ['betting', 'dealing', 'insuring', 'acting', 'drawing', 'winning', 'losing'] as const;
+const blackjackStatuses = ['betting', 'dealing', 'insurance', 'acting', 'drawing'] as const;
 
 type BlackjackStatus = typeof blackjackStatuses[number];
 

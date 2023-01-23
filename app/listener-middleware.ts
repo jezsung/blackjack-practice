@@ -1,7 +1,6 @@
 import type { TypedAddListener, TypedStartListening } from '@reduxjs/toolkit';
 import { addListener, createListenerMiddleware } from '@reduxjs/toolkit';
-
-import type { AppDispatch, RootState } from '../store';
+import { AppDispatch, RootState } from '../store';
 
 export const listenerMiddleware = createListenerMiddleware();
 
